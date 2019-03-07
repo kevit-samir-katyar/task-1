@@ -32,6 +32,14 @@ var UserSchema = new mongoose.Schema({
         type: String,
         default: null
     },
+    phone:{
+        type:Number,
+        required:true
+    },
+    photo:{ 
+        type:String,
+        default:null
+    },
     tokens:
     [{
         access:{
@@ -62,6 +70,20 @@ UserSchema.methods.generateAuthToken = function(){
    });
 }
 
+
+UserSchema.statics.findByUser = function (token){
+    var User =this;
+    return User.findOne({token}).then((user)=>{
+        if(!user)
+        {
+            return Promise.reject();
+        }
+            return Promise.resolve(user);
+    });
+    
+ }
+ 
+
 UserSchema.methods.removeToken = function (token){
    var user = this;
    
@@ -72,21 +94,7 @@ UserSchema.methods.removeToken = function (token){
    })
 }
 
-UserSchema.statics.findByToken = function(token) {
-    var User = this;
-    var decoded;
-    try{
-        decoded = jwt.verify(token,'abc123');
-    }catch(e){
-        return  Promise.reject();
-    }
 
-    return User.findOne({
-        '_id': decoded._id,
-        'tokens.token':token,
-        'tokens.access':'auth'
-    });
-};
 UserSchema.statics.findByCredentials = function(email,password){
     var User =this;
     return User.findOne({email}).then((user)=>{
@@ -105,7 +113,37 @@ UserSchema.statics.findByCredentials = function(email,password){
         });
 
     });
-}
+};
+UserSchema.statics.findByName = function(name){
+    var User =this;
+    return User.findOne({name}).then((user)=>{
+        if(!user)
+        {
+            return Promise.reject();
+        }
+            console.log(user);
+            return Promise.resolve(user);
+        });
+
+};
+
+UserSchema.statics.findByToken = function(token) {
+    var User = this;
+    var decoded;
+    try{
+        decoded = jwt.verify(token,'abc123');
+    }catch(e){
+        return  Promise.reject();
+    }
+
+    return User.findOne({
+        '_id': decoded._id,
+        'tokens.token':token,
+        'tokens.access':'auth'
+    });
+};
+
+
 
 UserSchema.pre('save', function(next){
     var user = this;
@@ -123,6 +161,13 @@ UserSchema.pre('save', function(next){
         next();
     }
 });
+
+
+
+
+
+
+
 
 var User=mongoose.model('Users',UserSchema);
 

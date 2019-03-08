@@ -11,7 +11,18 @@ const {authenticate}=require('./../middleware/authenticate')
 
 var app=express();
 app.use(bodyParser.json());
-
+var fileName;
+var diskStorage = multer.diskStorage({
+    destination: function (req, file, cb) {
+      cb(null, 'uploads/')
+    },
+         filename: function (req, file, cb) {
+            var fileType=file.mimetype.split('/');
+            fileName=file.fieldname.toString('hex') + Date.now()+ '.'+fileType[1];
+                        cb(null,fileName); 
+        }
+       });
+  var upload = multer({ storage: diskStorage });      
 
 // New User 
 
@@ -39,14 +50,16 @@ app.get('/usera',authenticate,(req,res)=>{
         {
             var body ={
                 name:doc.name,
-                address:doc.address
+                address:doc.address,
+                photo :doc.photo
             }
             res.send(body);   
         }
         var abc ={
             name:doc.name,
             address:doc.address,
-            email:doc.email
+            email:doc.email,
+            photo:doc.photo
         }
         res.send(abc);   
     },(e)=>{
@@ -57,24 +70,50 @@ app.get('/usera',authenticate,(req,res)=>{
 
 // Upload Photo
 
-app.post('/profile',  upload.single('avatar'), function (req, res) {
-   var photo = req.file.filename;
+app.post('/profile', upload.single('avatar'), function (req, res) {
+   
    var token = req.header('x-auth');
-  
-        User.findByUser(token).then((result)=>{       
+   console.log(token);
+        User.findByUser(req.header('x-auth')).then((result)=>{       
             var id = result._id;
-            result.photo = req.file.filename;
-        
-            User.findOneAndUpdate( id , {$set:result} , {new :true}) .then((data)=>{
-                if(data){
+            
+            result.photo = 'D:/Kevit/Task/uploads/'+ fileName;
+            
+            User.findOneAndUpdate({_id :result._id} , {$set:result} , {new :true}) .then((data)=>{
+                console.log(data);
+                if(!data){
                     res.send('Profile Photo Uplodad');
                 }
+                res.send(data);
+
             });
-            res.send(result);
+          
         }).catch((e)=>{
             res.status(401).send();
         });
  });
+
+// show Photo
+ app.get('/profilePhoto/:name',(req,res)=>{
+    var body =req.params.name;
+    console.log(body);
+    User.findByName(body).then((doc)=>{   
+        console.log(doc);
+        if(doc.tokens[0].token !== req.header('x-auth'))
+        {
+            var body ={
+                photo : doc.photo
+            }
+            res.send(body);   
+        }
+        var abc ={
+            photo:doc.photo
+        }
+        res.send(abc);   
+    },(e)=>{
+        res.status(401).send(e);
+    })
+});
 
 
 

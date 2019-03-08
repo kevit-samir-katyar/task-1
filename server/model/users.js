@@ -73,11 +73,13 @@ UserSchema.methods.generateAuthToken = function(){
 
 UserSchema.statics.findByUser = function (token){
     var User =this;
-    return User.findOne({token}).then((user)=>{
+    
+    return User.findOne({'tokens.token':token}).then((user)=>{       
         if(!user)
         {
             return Promise.reject();
         }
+            
             return Promise.resolve(user);
     });
     

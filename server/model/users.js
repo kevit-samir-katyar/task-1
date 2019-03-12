@@ -1,8 +1,16 @@
+/**
+ * System and 3rd party libs
+ */
 const mongoose = require('mongoose');
 const validator = require('validator'); 
 const jwt = require('jsonwebtoken');
 const _ = require('lodash');
 const bcrypt=require('bcryptjs');
+
+/**
+ * User Schema
+ */
+
 var UserSchema = new mongoose.Schema({
     name:{
         type: String,

@@ -44,10 +44,12 @@ var UserSchema = new mongoose.Schema({
     [{
         access:{
             type:String,
+            default:null,
             required:true
         },
         token:{
             type:String,
+            default:null,
             required:true
         }
     }]
@@ -70,7 +72,9 @@ UserSchema.methods.generateAuthToken = function(){
    });
 }
 
-
+/*
+    Find User Using
+*/
 UserSchema.statics.findByUser = function (token){
     var User =this;
     
@@ -84,7 +88,10 @@ UserSchema.statics.findByUser = function (token){
     });
     
  }
- 
+
+/*
+    RemoveToken Or Logout
+*/
 
 UserSchema.methods.removeToken = function (token){
    var user = this;
@@ -96,6 +103,9 @@ UserSchema.methods.removeToken = function (token){
    })
 }
 
+/*
+    Authenticate The User
+*/
 
 UserSchema.statics.findByCredentials = function(email,password){
     var User =this;
@@ -116,6 +126,10 @@ UserSchema.statics.findByCredentials = function(email,password){
 
     });
 };
+
+/*
+    Find User Using Name For Secrch Functionality
+*/
 UserSchema.statics.findByName = function(name){
     var User =this;
     return User.findOne({name}).then((user)=>{
@@ -123,12 +137,14 @@ UserSchema.statics.findByName = function(name){
         {
             return Promise.reject();
         }
-            console.log(user);
             return Promise.resolve(user);
         });
 
 };
 
+/*
+    Find a Token For Authenticate Middelware
+*/
 UserSchema.statics.findByToken = function(token) {
     var User = this;
     var decoded;
@@ -145,7 +161,9 @@ UserSchema.statics.findByToken = function(token) {
     });
 };
 
-
+/*
+    Generate Hash PassWord And Store
+*/
 
 UserSchema.pre('save', function(next){
     var user = this;
